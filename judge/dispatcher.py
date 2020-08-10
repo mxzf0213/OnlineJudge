@@ -154,10 +154,13 @@ class JudgeDispatcher(DispatcherBase):
 
         with ChooseJudgeServer() as server:
             if not server:
+                print("aa")
                 data = {"submission_id": self.submission.id, "problem_id": self.problem.id}
                 cache.lpush(CacheKey.waiting_queue, json.dumps(data))
                 return
+            print("bb")
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
+            print("cc")
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
 
         if not resp:
