@@ -8,7 +8,13 @@ from django.contrib import auth
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
+
+# delete in 2020.04.16
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+# add in 2020.04.16
+# from django.views.decorators.csrf import csrf_exempt
+# end add
+
 from otpauth import OtpAuth
 
 from problem.models import Problem
@@ -27,9 +33,13 @@ from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
 
+import requests, json
 
 class UserProfileAPI(APIView):
+    # add in 2020.04.16
     @method_decorator(ensure_csrf_cookie)
+    # @method_decorator(csrf_exempt)
+
     def get(self, request, **kwargs):
         """
         判断是否登录， 若登录返回用户信息
@@ -434,3 +444,36 @@ class SSOAPI(CSRFExemptAPIView):
         except User.DoesNotExist:
             return self.error("User does not exist")
         return self.success({"username": user.username, "avatar": user.userprofile.avatar, "admin_type": user.admin_type})
+
+class OauthAPI(APIView):
+    def get(self,request):
+        access_token = request.GET.get('access_token')
+        url = 'http://api.shuishan.net.cn/api/user/oauth/info'
+        # form_header =  {"Authorization": "Bearer b770f989-13c0-4edd-ba4d-95c0452ddc88"}
+        data = {"accessToken": access_token,"appId": "shuishanoj"}
+        res = requests.post(url=url, json=data)
+        if res.status_code != 200:
+            return self.error("post failed")
+        if json.loads(res.text)['respCode'] != '20000':
+            return self.error("wrong access_token")
+        user_dic = json.loads(res.text)['data']['data']
+        username = user_dic['userNumber'] + user_dic['truename']
+
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            pass
+        else:
+            email = username + '@shuishanoj.com'
+            user = User.objects.create(username=username, email=email)
+            user.set_password(rand_str(type='str'))
+            user.save()
+            UserProfile.objects.create(user=user)
+
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        from django.contrib.auth import login
+        login(request, user)
+        return self.success("Succeeded")
+
+
+

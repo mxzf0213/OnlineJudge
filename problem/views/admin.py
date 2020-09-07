@@ -122,10 +122,10 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
             return self.error("Problem does not exists")
-
         if not ((request.user.is_authenticated and request.user.is_admin_role()) or problem.contest is None):
             return self.error("You are not granted")
 
+        # Because i want regular users to download pulbic problems, so the checker is closed
         # if problem.contest:
         #     ensure_created_by(problem.contest, request.user)
         # else:

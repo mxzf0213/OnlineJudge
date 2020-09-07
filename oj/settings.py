@@ -51,26 +51,22 @@ LOCAL_APPS = [
     'submission',
     'options',
     'judge',
-    'recommend'
 ]
 
-TIME_APPS = [
-    'django_crontab'
-]
-
-CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
-
-INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS + TIME_APPS
-
-CRONJOBS = [
-    # 每30分钟生成一次推荐矩阵
-    ('*/30 * * * *', 'recommend.views.admin.get', '>>task.log')
-]
+INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
 
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    # delete in 2020.04.16
     'django.middleware.csrf.CsrfViewMiddleware',
+    # end delete
+
+    # add in 2020.04.16
+    # 'corsheaders.middleware.CorsMiddleware',
+    #end add
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'account.middleware.APITokenAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -225,6 +221,10 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
+# added in 2020.04.16
+# SESSION_COOKIE_DOMAIN =".kfcoding.com"
+# end added
+
 DRAMATIQ_BROKER = {
     "BROKER": "dramatiq.brokers.redis.RedisBroker",
     "OPTIONS": {
@@ -256,3 +256,36 @@ RAVEN_CONFIG = {
 }
 
 IP_HEADER = "HTTP_X_REAL_IP"
+
+# added in 2020.04.16
+# X_FRAME_OPTIONS = 'ALLOWALL'
+#
+# CORS_ALLOW_CREDENTIALS = True
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_WHITELIST = (
+#  '*'
+# )
+# CORS_ALLOW_METHODS = (
+#  'DELETE',
+#  'GET',
+#  'OPTIONS',
+#  'PATCH',
+#  'POST',
+#  'PUT',
+#  'VIEW',
+# )
+#
+# CORS_ALLOW_HEADERS = (
+#  'XMLHttpRequest',
+#  'X_FILENAME',
+#  'accept-encoding',
+#  'authorization',
+#  'content-type',
+#  'dnt',
+#  'origin',
+#  'user-agent',
+#  'x-csrftoken',
+#  'x-requested-with',
+#  'Pragma',
+# )
+# end added
