@@ -15,7 +15,6 @@ from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer
                            ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
-
 class SubmissionAPI(APIView):
     def throttling(self, request):
         # 使用 open_api 的请求暂不做限制
@@ -103,6 +102,12 @@ class SubmissionAPI(APIView):
 
         if True:
             submission_data = SubmissionModelSerializer(submission).data
+            # 考试且不是管理员则隐藏测试用例
+            if(submission_data['contest'] != None and (request.user.is_admin_role() == False)):
+                for i in range(len(submission_data['info']['data'])):
+                    submission_data['info']['data'][i]['output'] = None
+                    submission_data['info']['data'][i]['std_in'] = None
+                    submission_data['info']['data'][i]['std_out'] = None
         else:
             submission_data = SubmissionSafeModelSerializer(submission).data
             # 还原

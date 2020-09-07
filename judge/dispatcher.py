@@ -144,7 +144,7 @@ class JudgeDispatcher(DispatcherBase):
             "max_cpu_time": self.problem.time_limit,
             "max_memory": 1024 * 1024 * self.problem.memory_limit,
             "test_case_id": self.problem.test_case_id,
-            "output": False,
+            "output": True,
             "spj_version": self.problem.spj_version,
             "spj_config": spj_config.get("config"),
             "spj_compile_config": spj_config.get("compile"),
@@ -154,13 +154,10 @@ class JudgeDispatcher(DispatcherBase):
 
         with ChooseJudgeServer() as server:
             if not server:
-                print("aa")
                 data = {"submission_id": self.submission.id, "problem_id": self.problem.id}
                 cache.lpush(CacheKey.waiting_queue, json.dumps(data))
                 return
-            print("bb")
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
-            print("cc")
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
 
         if not resp:

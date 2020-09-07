@@ -8,13 +8,7 @@ from django.contrib import auth
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-
-# delete in 2020.04.16
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-# add in 2020.04.16
-# from django.views.decorators.csrf import csrf_exempt
-# end add
-
 from otpauth import OtpAuth
 
 from problem.models import Problem
@@ -35,10 +29,7 @@ from ..tasks import send_email_async
 
 
 class UserProfileAPI(APIView):
-    # add in 2020.04.16
     @method_decorator(ensure_csrf_cookie)
-    # @method_decorator(csrf_exempt)
-
     def get(self, request, **kwargs):
         """
         判断是否登录， 若登录返回用户信息
