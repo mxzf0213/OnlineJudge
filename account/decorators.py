@@ -57,7 +57,7 @@ class problem_permission_required(admin_role_required):
 
 def check_contest_permission(check_type="details"):
     """
-    只供Class based view 使用，检查用户是否有权进入该contest, check_type 可选 details, problems, ranks, submissions
+    只供Class based views 使用，检查用户是否有权进入该contest, check_type 可选 details, problems, ranks, submissions
     若通过验证，在view中可通过self.contest获得该contest
     """
 
@@ -74,7 +74,7 @@ def check_contest_permission(check_type="details"):
                 return self.error("Parameter error, contest_id is required")
 
             try:
-                # use self.contest to avoid query contest again in view.
+                # use self.contest to avoid query contest again in views.
                 self.contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
             except Contest.DoesNotExist:
                 return self.error("Contest %s doesn't exist" % contest_id)

@@ -6,6 +6,7 @@ from django.utils.deprecation import MiddlewareMixin
 from utils.api import JSONResponse
 from account.models import User
 
+
 class APITokenAuthMiddleware(MiddlewareMixin):
     def process_request(self, request):
         appkey = request.META.get("HTTP_APPKEY")

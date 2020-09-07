@@ -154,7 +154,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
 
     def get_display_id(self, obj):
-        return obj._id
+        return obj._idu
 
     def _html_format_value(self, value):
         return {"format": "html", "value": value}
@@ -244,7 +244,6 @@ class ImportProblemSerializer(serializers.Serializer):
     description = FormatValueSerializer()
     input_description = FormatValueSerializer()
     output_description = FormatValueSerializer()
-    hint = FormatValueSerializer()
     test_case_score = serializers.ListField(child=TestCaseScoreSerializer(), allow_null=True)
     time_limit = serializers.IntegerField(min_value=1, max_value=60000)
     memory_limit = serializers.IntegerField(min_value=1, max_value=10240)
