@@ -5,7 +5,6 @@ import os,sys
 import re
 import numpy as np
 import tensorflow as tf
-import random
 try:
     import tensorflow.python.keras as keras
     from tensorflow.python.keras.callbacks import TensorBoard

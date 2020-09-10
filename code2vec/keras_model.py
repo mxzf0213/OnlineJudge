@@ -9,8 +9,6 @@ except:
     import tensorflow.keras.backend as K
 from typing import Optional
 from code2vec.config import Config
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import f1_score
 
 from code2vec.keras_attention_layer import Attention_layer
 # from collections import namedtuple
