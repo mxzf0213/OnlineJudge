@@ -11,7 +11,9 @@ RUN apt-get update && apt-get upgrade && apt-get install curl ca-certificates gn
 
 RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-RUN apt-get install -y nginx openssl curl unzip supervisor libjpeg-dev zlib1g-dev postgresql   freetype2-demos libfreetype6 libfreetype6-dev && \
+RUN apt-get install -y nginx openssl curl unzip supervisor libjpeg-dev zlib1g-dev postgresql   freetype2-demos libfreetype6 libfreetype6-dev default-jdk && \
     pip install --no-cache-dir -r /app/deploy/requirements.txt && apt-get purge
 
+RUN chmod -R 777 /app/code2vec
+RUN chmod -R 777 /app/recommend
 ENTRYPOINT /app/deploy/entrypoint.sh

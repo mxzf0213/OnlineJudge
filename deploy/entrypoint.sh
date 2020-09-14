@@ -68,8 +68,12 @@ do
     sleep 8
 done
 
-addgroup -g 12003 spj
-adduser -u 12000 -S -G spj server
+addgroup --gid 12003 spj
+useradd --uid 12000 --system --group spj server
+useradd -s /sbin/nologin -M nginx
+
+python manage.py crontab remove
+python manage.py crontab add
 
 chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
