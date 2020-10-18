@@ -444,9 +444,11 @@ class Code2tags():
         else:
             inputs = (source_input, path_input, target_input, context_valid_input)
 
-        index2str = ['incorrect input strings','incorrect input variables','no output','incorrect output format','incorrect initialization',
-                     'incorrect data types','incorrect data precision','incorrect loops','incorrect branches','incorrect logic','incorrect operators']
+        # index2str = ['incorrect input strings','incorrect input variables','no output','incorrect output format','incorrect initialization',
+        #              'incorrect data types','incorrect data precision','incorrect loops','incorrect branches','incorrect logic','incorrect operators']
 
+        index2str = ['输入字符串错误', '输入变量错误', '缺少输出', '输出格式未按要求', '初始化错误',
+                     '类型使用错误', '类型运算精度问题', '循环错误', '判断错误', '逻辑错误', '运算符错误']
         results = self.predict(inputs).flatten().tolist()
         results_to_str = list(map(lambda x:(index2str[x[0]],x[1]),enumerate(results)))
         results_to_str.sort(key = lambda x:x[1], reverse=True)

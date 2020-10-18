@@ -74,6 +74,7 @@ useradd -s /sbin/nologin -M nginx
 
 python manage.py crontab remove
 python manage.py crontab add
+service cron restart
 
 chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
