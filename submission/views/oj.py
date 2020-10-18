@@ -10,7 +10,7 @@ from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
-from ..models import Submission
+from ..models import Submission, SubmissionTag
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
                            ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
@@ -131,10 +131,21 @@ class SubmissionAPI(APIView):
             return self.error("No permission to share the submission")
         if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
             return self.error("Can not share submission now")
-        submission.shared = request.data["shared"]
-        submission.save(update_fields=["shared"])
+        if "shared" in request.data:
+            submission.shared = request.data["shared"]
+            submission.save(update_fields=["shared"])
+        elif "tags" in request.data:
+            submission.tags.remove(*submission.tags.all())
+            tags = request.data.pop("tags")
+            for tag in tags:
+                try:
+                    tag = SubmissionTag.objects.get(name=tag)
+                except SubmissionTag.DoesNotExist:
+                    tag = SubmissionTag.objects.create(name=tag)
+                submission.tags.add(tag)
+        else:
+            pass
         return self.success()
-
 
 class SubmissionListAPI(APIView):
     def get(self, request):
