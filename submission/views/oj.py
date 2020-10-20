@@ -134,17 +134,24 @@ class SubmissionAPI(APIView):
         if "shared" in request.data:
             submission.shared = request.data["shared"]
             submission.save(update_fields=["shared"])
-        elif "tags" in request.data:
-            submission.tags.remove(*submission.tags.all())
-            tags = request.data.pop("tags")
-            for tag in tags:
-                try:
-                    tag = SubmissionTag.objects.get(name=tag)
-                except SubmissionTag.DoesNotExist:
-                    tag = SubmissionTag.objects.create(name=tag)
-                submission.tags.add(tag)
-        else:
-            pass
+        return self.success()
+
+class saveErrorAnnotationAPI(APIView):
+    @login_required
+    def post(self, request):
+        data = request.data
+        try:
+            submission = Submission.objects.get(id=data.pop("id"))
+        except Submission.DoesNotExist:
+            return self.error("submission does not exist")
+        submission.tags.remove(*submission.tags.all())
+        errors = data.pop('tags')
+        for err in errors:
+            try:
+                _err = SubmissionTag.objects.get(name=err)
+            except SubmissionTag.DoesNotExist:
+                _err = SubmissionTag.objects.create(name=err)
+            submission.tags.add(_err)
         return self.success()
 
 class SubmissionListAPI(APIView):
