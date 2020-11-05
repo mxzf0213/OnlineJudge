@@ -34,4 +34,3 @@ django-crontab
 numpy==1.15.4
 pandas
 tensorflow==2.0.0b1
-torch==1.2.0

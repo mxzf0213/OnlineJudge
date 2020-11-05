@@ -77,3 +77,6 @@ http_locations.conf
 https_locations.conf
 
 venv/
+
+code2vec/codeData2/parsedCode/*
+code2vec/codeData2/parsedCode/
