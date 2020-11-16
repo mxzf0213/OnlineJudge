@@ -11,8 +11,9 @@ from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
 from ..models import Submission, SubmissionTag
+from django.core import serializers
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
-                           ShareSubmissionSerializer)
+                           ShareSubmissionSerializer, SubmissionTagSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
 class SubmissionAPI(APIView):
@@ -153,6 +154,21 @@ class saveErrorAnnotationAPI(APIView):
                 _err = SubmissionTag.objects.create(name=err)
             submission.tags.add(_err)
         return self.success()
+
+class getErrorAnnotationAPI(APIView):
+    def get(self, request):
+        if not request.GET.get("id"):
+            return self.error("submissionId is needed")
+        try:
+            submission = Submission.objects.get(id=request.GET.get("id"))
+        except Submission.DoesNotExist:
+            return self.error("submission does not exist")
+        res_tags = []
+        for e in submission.tags.all():
+            res_tags.append(SubmissionTagSerializer(e).data)
+        return self.success(res_tags)
+
+
 
 class SubmissionListAPI(APIView):
     def get(self, request):
