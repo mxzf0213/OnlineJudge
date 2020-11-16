@@ -1,4 +1,4 @@
-from .models import Submission
+from .models import Submission, SubmissionTag
 from utils.api import serializers
 from utils.serializers import LanguageNameChoiceField
 
@@ -14,6 +14,12 @@ class CreateSubmissionSerializer(serializers.Serializer):
 class ShareSubmissionSerializer(serializers.Serializer):
     id = serializers.CharField()
     shared = serializers.BooleanField()
+
+
+class SubmissionTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubmissionTag
+        fields = "__all__"
 
 
 class SubmissionModelSerializer(serializers.ModelSerializer):
