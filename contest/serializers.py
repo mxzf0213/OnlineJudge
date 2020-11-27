@@ -24,6 +24,7 @@ class EditConetestSeriaizer(serializers.Serializer):
     end_time = serializers.DateTimeField()
     password = serializers.CharField(allow_blank=True, allow_null=True, max_length=32)
     visible = serializers.BooleanField()
+    show_case = serializers.BooleanField()
     real_time_rank = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32))
 
@@ -57,6 +58,7 @@ class CreateContestAnnouncementSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=128)
     content = serializers.CharField()
     visible = serializers.BooleanField()
+    show_case = serializers.BooleanField()
 
 
 class EditContestAnnouncementSerializer(serializers.Serializer):
@@ -64,6 +66,7 @@ class EditContestAnnouncementSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=128, required=False)
     content = serializers.CharField(required=False, allow_blank=True)
     visible = serializers.BooleanField(required=False)
+    show_case = serializers.BooleanField(required=False)
 
 
 class ContestPasswordVerifySerializer(serializers.Serializer):

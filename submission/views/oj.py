@@ -12,6 +12,8 @@ from utils.captcha import Captcha
 from utils.throttling import TokenBucket
 from ..models import Submission, SubmissionTag
 from django.core import serializers
+
+from contest.models import Contest
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
                            ShareSubmissionSerializer, SubmissionTagSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
@@ -113,6 +115,13 @@ class SubmissionAPI(APIView):
             submission_data = SubmissionSafeModelSerializer(submission).data
             # 还原
             submission_data['problem'] = temp_save
+
+        if submission_data['contest'] != None:
+            contest = Contest.objects.get(id=submission_data['contest'])
+            if not contest.show_case:
+                submission_data['show_case'] = False
+            else:
+                submission_data['show_case'] = True
 
         # 是否有权限取消共享
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
