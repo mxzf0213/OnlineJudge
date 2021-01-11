@@ -124,7 +124,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
             return self.error("Problem does not exists")
 
         if problem.contest is not None:
-            if not problem.contest.show_case and request.user.is_authenticated and request.user.is_admin_role():
+            if not (problem.contest.show_case or (request.user.is_authenticated and request.user.is_admin_role())):
                 return self.error("You are not granted")
 
 

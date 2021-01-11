@@ -100,28 +100,21 @@ class SubmissionAPI(APIView):
         if not submission.check_user_permission(request.user):
             return self.error("No permission for this submission")
 
-        # save the problem_id for downloading lately
-        temp_save = submission.problem.id
-
-        if True:
-            submission_data = SubmissionModelSerializer(submission).data
-            # 考试且不是管理员则隐藏测试用例
-            # if(submission_data['contest'] != None and (request.user.is_admin_role() == False)):
-            #     for i in range(len(submission_data['info']['data'])):
-            #         submission_data['info']['data'][i]['output'] = None
-            #         submission_data['info']['data'][i]['std_in'] = None
-            #         submission_data['info']['data'][i]['std_out'] = None
-        else:
-            submission_data = SubmissionSafeModelSerializer(submission).data
-            # 还原
-            submission_data['problem'] = temp_save
-
+        submission_data = SubmissionModelSerializer(submission).data
         if submission_data['contest'] != None:
             contest = Contest.objects.get(id=submission_data['contest'])
-            if not contest.show_case:
+            if not contest.show_case and not request.user.is_admin_role():
                 submission_data['show_case'] = False
             else:
                 submission_data['show_case'] = True
+        else:
+            submission_data['show_case'] = True
+        # 仅通过show_case控制测试用例显示与否
+        if not submission_data['show_case']:
+            for i in range(len(submission_data['info']['data'])):
+                submission_data['info']['data'][i]['output'] = None
+                submission_data['info']['data'][i]['std_in'] = None
+                submission_data['info']['data'][i]['std_out'] = None
 
         # 是否有权限取消共享
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
