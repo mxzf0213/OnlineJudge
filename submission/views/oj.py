@@ -1,7 +1,7 @@
 import ipaddress
 
 from account.decorators import login_required, check_contest_permission
-from contest.models import ContestStatus, ContestRuleType
+from contest.models import ContestStatus, ContestRuleType, Contest
 from judge.tasks import judge_task
 from options.options import SysOptions
 # from judge.dispatcher import JudgeDispatcher
@@ -11,12 +11,16 @@ from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
 from ..models import Submission, SubmissionTag
+from account.models import User
 from django.core import serializers
 
 from contest.models import Contest
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
                            ShareSubmissionSerializer, SubmissionTagSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
+
+import requests, json
+
 
 class SubmissionAPI(APIView):
     def throttling(self, request):
@@ -139,6 +143,43 @@ class SubmissionAPI(APIView):
             submission.save(update_fields=["shared"])
         return self.success()
 
+
+class storeSubmissionAPI(APIView):
+    @login_required
+    def post(self, request):
+        user_id = request.user.id
+        username = request.user.username
+        request_data = request.data
+        access_token = User.objects.filter(username=username).first().accessToken
+        if access_token is None:
+            return self.success()
+        url = 'http://api.shuishan.net.cn/api/user/oauth/info'
+        data = {"accessToken": access_token, "appId": "shuishanoj"}
+        res = requests.post(url=url, json=data)
+        if res.status_code != 200:
+            return self.error("post failed")
+        if json.loads(res.text)['respCode'] != '20000':
+            return self.error("wrong access_token")
+
+        user_dic = json.loads(res.text)['data']['data']
+
+        contest_id = request_data["contest_id"] if "contest_id" in request_data else None
+        if contest_id is not None:
+            contest_name = Contest.objects.filter(id=contest_id).first().title
+        else:
+            contest_name = None
+
+        data = {"token": access_token, "user_name": user_dic['userNumber'], "problem_id": request_data['problem_id'],
+                "problem_name": request_data["problem_name"], "contest_id": contest_id,
+                "contest_name": contest_name, "judge_status": request_data["judge_status"],
+                "judge_id": request_data["judge_id"], "code": request_data["code"]}
+        url = "http://gitea.shuishan.net.cn:7788/oj"
+        res = requests.post(url=url, json=data)
+        if res.status_code != 200:
+            return self.error("upload code failed")
+        return self.success("code is uploaded into mayuan")
+
+
 class saveErrorAnnotationAPI(APIView):
     @login_required
     def post(self, request):
@@ -157,6 +198,7 @@ class saveErrorAnnotationAPI(APIView):
             submission.tags.add(_err)
         return self.success()
 
+
 class getErrorAnnotationAPI(APIView):
     def get(self, request):
         if not request.GET.get("id"):
@@ -169,7 +211,6 @@ class getErrorAnnotationAPI(APIView):
         for e in submission.tags.all():
             res_tags.append(SubmissionTagSerializer(e).data)
         return self.success(res_tags)
-
 
 
 class SubmissionListAPI(APIView):

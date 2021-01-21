@@ -459,6 +459,8 @@ class OauthAPI(APIView):
             user.save()
             UserProfile.objects.create(user=user)
 
+        user.accessToken = access_token
+        user.save()
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         from django.contrib.auth import login
         login(request, user)
