@@ -16,5 +16,6 @@ urlpatterns = [
     url(r"^api/admin/", include("utils.urls")),
     url(r"^api/", include("recommend.urls.oj")),
     url(r"^api/", include("DKT.urls.oj")),
-    url(r"^api/", include("code2vec.urls.oj"))
+    url(r"^api/", include("code2vec.urls.oj")),
+    url(r"^api/", include("SF_submission.urls.oj"))
 ]
