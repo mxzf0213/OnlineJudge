@@ -1,7 +1,9 @@
 import ipaddress
 
 from account.decorators import login_required, check_contest_permission
+
 from contest.models import ContestStatus, ContestRuleType, Contest
+
 from judge.tasks import judge_task
 from options.options import SysOptions
 # from judge.dispatcher import JudgeDispatcher
@@ -18,6 +20,7 @@ from contest.models import Contest
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
                            ShareSubmissionSerializer, SubmissionTagSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
+
 
 import requests, json
 
@@ -86,7 +89,7 @@ class SubmissionAPI(APIView):
                                                contest_id=data.get("contest_id"))
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
-        judge_task.send(submission.id, problem.id)
+        judge_task.send(submission_id=submission.id, problem_id=problem.id)
         if hide_id:
             return self.success()
         else:

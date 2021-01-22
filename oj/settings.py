@@ -51,7 +51,8 @@ LOCAL_APPS = [
     'submission',
     'options',
     'judge',
-    'recommend'
+    'recommend',
+    'SF_submission'
 ]
 
 TIME_APPS = [

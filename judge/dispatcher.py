@@ -14,6 +14,7 @@ from options.options import SysOptions
 from problem.models import Problem, ProblemRuleType
 from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
+from SF_submission.models import SFSubmission
 from utils.cache import cache
 from utils.constants import CacheKey
 
@@ -89,17 +90,19 @@ class SPJCompiler(DispatcherBase):
 
 
 class JudgeDispatcher(DispatcherBase):
-    def __init__(self, submission_id, problem_id):
+    def __init__(self, submission_id, problem_id, user_id=None):
         super().__init__()
-        self.submission = Submission.objects.get(id=submission_id)
-        self.contest_id = self.submission.contest_id
-        self.last_result = self.submission.result if self.submission.info else None
-
-        if self.contest_id:
-            self.problem = Problem.objects.select_related("contest").get(id=problem_id, contest_id=self.contest_id)
-            self.contest = self.problem.contest
-        else:
-            self.problem = Problem.objects.get(id=problem_id)
+        if submission_id:
+            self.submission = Submission.objects.get(id=submission_id)
+            self.contest_id = self.submission.contest_id
+            self.last_result = self.submission.result if self.submission.info else None
+            if self.contest_id:
+                self.problem = Problem.objects.select_related("contest").get(id=problem_id, contest_id=self.contest_id)
+                self.contest = self.problem.contest
+            else:
+                self.problem = Problem.objects.get(id=problem_id)
+        if user_id:
+            self.sf_submission = SFSubmission.objects.get(user_id=user_id)
 
     def _compute_statistic_info(self, resp_data):
         # 用时和内存占用保存为多个测试点中最长的那个
@@ -401,3 +404,44 @@ class JudgeDispatcher(DispatcherBase):
             rank.total_score = rank.total_score + current_score
         rank.submission_info[problem_id] = current_score
         rank.save()
+
+    def self_test(self):
+        language = self.sf_submission.language
+        sub_config = list(filter(lambda item: language == item["name"], SysOptions.languages))[0]
+        code = self.sf_submission.code
+
+        data = {
+            "language_config": sub_config["config"],
+            "src": code,
+            "max_cpu_time": 2048,
+            "max_memory": 1024 * 1024 * 1000,
+            "test_case": self.sf_submission.test_case,
+            "output": True,
+            "spj_version": None,
+            "spj_config": None,
+            "spj_compile_config": None,
+            "spj_src": None,
+            "io_mode": None
+        }
+
+        with ChooseJudgeServer() as server:
+            if not server:
+                data = {"sf_submission_id": self.sf_submission.user_id}
+                cache.lpush(CacheKey.waiting_queue, json.dumps(data))
+                return
+            SFSubmission.objects.filter(user_id=self.sf_submission.user_id).update(result=JudgeStatus.JUDGING)
+            resp = self._request(urljoin(server.service_url, "/judge"), data=data)
+
+        if not resp:
+            SFSubmission.objects.filter(user_id=self.sf_submission.user_id).update(result=JudgeStatus.SYSTEM_ERROR)
+            return
+
+        if resp["err"]:
+            self.sf_submission.result = JudgeStatus.COMPILE_ERROR
+            self.sf_submission.statistic_info["err_info"] = resp["data"]
+            self.sf_submission.statistic_info["score"] = 0
+        else:
+            self.sf_submission.result = JudgeStatus.ACCEPTED
+            self.sf_submission.output = resp["data"]
+        self.sf_submission.save()
+        process_pending_task()
