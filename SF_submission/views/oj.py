@@ -39,6 +39,6 @@ class SFSubmissionAPI(APIView):
         except:
             pass
         if sf_submission:
-            return self.success({"status": sf_submission.result, "output": sf_submission.output})
+            return self.success({"status": sf_submission.result, "output": sf_submission.output, "info": sf_submission.statistic_info})
         else:
             return self.error()
