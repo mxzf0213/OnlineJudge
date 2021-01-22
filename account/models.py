@@ -42,6 +42,8 @@ class User(AbstractBaseUser):
     open_api_appkey = models.TextField(null=True)
     is_disabled = models.BooleanField(default=False)
 
+    accessToken = models.TextField(null=True)
+
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
 
